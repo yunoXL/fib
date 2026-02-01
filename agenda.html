@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow - Agenda</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --success: #22c55e;
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --text: #1e293b;
+        }
+
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        
+        header { text-align: center; margin-bottom: 30px; }
+        .clickable-title { color: var(--primary); cursor: pointer; font-size: 2.5rem; font-weight: 900; margin: 0; text-decoration: none; }
+
+        /* GRID DE MESES (IGUAL FINANÇAS) */
+        .months-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; max-width: 1100px; margin: 40px auto; }
+        .month-card { background: var(--card); padding: 45px 15px; border-radius: 25px; text-align: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: 0.3s; font-weight: 700; font-size: 1.2rem; }
+        .month-card:hover { transform: scale(1.05); background: var(--primary); color: white; }
+
+        /* LAYOUT DO CALENDÁRIO (ESCONDIDO INICIALMENTE) */
+        #calendar-view { display: none; max-width: 1100px; margin: 0 auto; animation: fadeIn 0.3s ease; }
+        .agenda-container { display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px; }
+
+        .calendar-card { background: var(--card); padding: 20px; border-radius: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .calendar-header { display: flex; justify-content: center; align-items: center; margin-bottom: 20px; font-weight: bold; font-size: 1.5rem; color: var(--primary); }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
+        .day-name { font-size: 0.7rem; color: #64748b; font-weight: bold; padding-bottom: 10px; }
+        .day { padding: 15px 10px; border-radius: 15px; cursor: pointer; transition: 0.2s; font-weight: 600; background: #f8fafc; }
+        .day:hover { background: #e2e8f0; }
+        .day.active { background: var(--primary); color: white; }
+        .day.has-task::after { content: ''; display: block; width: 5px; height: 5px; background: var(--success); border-radius: 50%; margin: 2px auto 0; }
+
+        .tasks-card { background: var(--card); padding: 25px; border-radius: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .task-input-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        input { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid #ddd; outline: none; }
+        .add-btn { background: var(--primary); color: white; border: none; font-weight: bold; cursor: pointer; padding: 12px 20px; border-radius: 12px; }
+        
+        .task-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
+        .btn-del { color: #ef4444; cursor: pointer; border: none; background: none; font-weight: bold; }
+        .back-btn { background: none; border: none; color: var(--primary); cursor: pointer; font-weight: bold; margin-bottom: 20px; display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @media (max-width: 768px) { .months-grid { grid-template-columns: repeat(2, 1fr); } .agenda-container { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 class="clickable-title" onclick="location.href='index.html'">Flow Agenda</h1>
+    </header>
+
+    <div id="months-view" class="months-grid">
+        </div>
+
+    <div id="calendar-view">
+        <button class="back-btn" onclick="showMonths()">← Voltar aos Meses</button>
+        
+        <div class="agenda-container">
+            <div class="calendar-card">
+                <div class="calendar-header" id="current-month-label">Mês Selecionado</div>
+                <div class="calendar-grid" id="calendar-days"></div>
+            </div>
+
+            <div class="tasks-card">
+                <h3 id="selected-date-label">Selecione um dia</h3>
+                <div class="task-input-group">
+                    <input type="text" id="task-desc" placeholder="O que tem pra hoje?">
+                    <button class="add-btn" onclick="addTask()">+</button>
+                </div>
+                <div id="task-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const monthsNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+        let agendaDB = JSON.parse(localStorage.getItem('flow_agenda')) || {};
+        let selectedMonthIndex = 0;
+        let selectedYear = 2026; // Definido conforme o sistema
+        let selectedFullDate = "";
+
+        // RENDERIZA OS 12 MESES INICIAIS
+        function renderMonthsMenu() {
+            const grid = document.getElementById('months-view');
+            grid.innerHTML = '';
+            monthsNames.forEach((name, index) => {
+                const card = document.createElement('div');
+                card.className = 'month-card';
+                card.innerText = name;
+                card.onclick = () => openCalendar(index);
+                grid.appendChild(card);
+            });
+        }
+
+        function openCalendar(monthIndex) {
+            selectedMonthIndex = monthIndex;
+            document.getElementById('months-view').style.display = 'none';
+            document.getElementById('calendar-view').style.display = 'block';
+            document.getElementById('current-month-label').innerText = monthsNames[monthIndex] + " " + selectedYear;
+            renderCalendarDays();
+        }
+
+        function showMonths() {
+            document.getElementById('months-view').style.display = 'grid';
+            document.getElementById('calendar-view').style.display = 'none';
+        }
+
+        function renderCalendarDays() {
+            const grid = document.getElementById('calendar-days');
+            grid.innerHTML = '';
+
+            ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].forEach(d => {
+                grid.innerHTML += `<div class="day-name">${d}</div>`;
+            });
+
+            const firstDay = new Date(selectedYear, selectedMonthIndex, 1).getDay();
+            const daysInMonth = new Date(selectedYear, selectedMonthIndex + 1, 0).getDate();
+
+            for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div></div>`;
+
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dateStr = `${selectedYear}-${String(selectedMonthIndex + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                const isActive = dateStr === selectedFullDate ? 'active' : '';
+                const hasTask = agendaDB[dateStr] && agendaDB[dateStr].length > 0 ? 'has-task' : '';
+                
+                grid.innerHTML += `<div class="day ${isActive} ${hasTask}" onclick="selectDate('${dateStr}')">${i}</div>`;
+            }
+        }
+
+        function selectDate(date) {
+            selectedFullDate = date;
+            const formatted = date.split('-').reverse().join('/');
+            document.getElementById('selected-date-label').innerText = formatted;
+            renderCalendarDays();
+            renderTasks();
+        }
+
+        function addTask() {
+            const input = document.getElementById('task-desc');
+            if (!input.value || !selectedFullDate) return;
+
+            if (!agendaDB[selectedFullDate]) agendaDB[selectedFullDate] = [];
+            agendaDB[selectedFullDate].push({ id: Date.now(), text: input.value });
+            
+            localStorage.setItem('flow_agenda', JSON.stringify(agendaDB));
+            input.value = '';
+            renderTasks();
+            renderCalendarDays();
+        }
+
+        function renderTasks() {
+            const list = document.getElementById('task-list');
+            list.innerHTML = '';
+            const tasks = agendaDB[selectedFullDate] || [];
+            tasks.forEach(t => {
+                list.innerHTML += `
+                    <div class="task-item">
+                        <span>${t.text}</span>
+                        <button class="btn-del" onclick="deleteTask(${t.id})">✕</button>
+                    </div>`;
+            });
+        }
+
+        function deleteTask(id) {
+            agendaDB[selectedFullDate] = agendaDB[selectedFullDate].filter(t => t.id !== id);
+            localStorage.setItem('flow_agenda', JSON.stringify(agendaDB));
+            renderTasks();
+            renderCalendarDays();
+        }
+
+        window.onload = renderMonthsMenu;
+    </script>
+</body>
+</html>

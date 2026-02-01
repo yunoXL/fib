@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow - Dashboard</title>
+    <link rel="manifest" href="manifest.json">
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --success: #22c55e;
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --text: #1e293b;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            text-align: center;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: var(--primary);
+            margin-bottom: 40px;
+            letter-spacing: -2px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .menu-card {
+            background: var(--card);
+            padding: 40px;
+            border-radius: 30px;
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 700;
+            font-size: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .menu-card:hover {
+            transform: translateY(-10px);
+            background: var(--primary);
+            color: white;
+        }
+
+        .icon { font-size: 2.5rem; }
+
+        /* --- SEÇÃO DE BACKUP NA PARTE DE BAIXO --- */
+        footer {
+            padding: 40px 0;
+            width: 100%;
+        }
+
+        .backup-section {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .btn-backup {
+            padding: 10px 20px;
+            border-radius: 15px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .export { background: #e2e8f0; color: var(--text); }
+        .export:hover { background: #cbd5e1; }
+        .import { background: #e2e8f0; color: var(--text); }
+        .import:hover { background: #cbd5e1; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Flow</h1>
+        
+        <div class="grid">
+            <a href="financas.html" class="menu-card">
+                <span class="icon">💰</span>
+                <span>Finanças</span>
+            </a>
+
+            <a href="agenda.html" class="menu-card">
+                <span class="icon">📅</span>
+                <span>Agenda</span>
+            </a>
+
+            <a href="#" class="menu-card" style="opacity: 0.4; cursor: not-allowed;">
+                <span class="icon">📝</span>
+                <span>Notas</span>
+            </a>
+
+            <a href="#" class="menu-card" style="opacity: 0.4; cursor: not-allowed;">
+                <span class="icon">⚙️</span>
+                <span>Ajustes</span>
+            </a>
+        </div>
+    </div>
+
+    <footer>
+        <div class="backup-section">
+            <button class="btn-backup export" onclick="exportData()">📤 Exportar Tudo</button>
+            <button class="btn-backup import" onclick="document.getElementById('importFile').click()">📥 Importar Tudo</button>
+            <input type="file" id="importFile" style="display:none" onchange="importData(event)">
+        </div>
+    </footer>
+
+    <script>
+        // Lógica para exportar todos os dados do sistema (Finanças, Metas, Agenda, Investimentos)
+        function exportData() {
+            const allData = {
+                flow_db: localStorage.getItem('flow_db'),
+                flow_inv: localStorage.getItem('flow_inv'),
+                flow_limit: localStorage.getItem('flow_limit'),
+                flow_goals: localStorage.getItem('flow_goals'),
+                flow_agenda: localStorage.getItem('flow_agenda')
+            };
+            
+            const blob = new Blob([JSON.stringify(allData)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `flow_completo_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+        }
+
+        // Lógica para importar e restaurar o sistema
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if(data.flow_db) localStorage.setItem('flow_db', data.flow_db);
+                    if(data.flow_inv) localStorage.setItem('flow_inv', data.flow_inv);
+                    if(data.flow_limit) localStorage.setItem('flow_limit', data.flow_limit);
+                    if(data.flow_goals) localStorage.setItem('flow_goals', data.flow_goals);
+                    if(data.flow_agenda) localStorage.setItem('flow_agenda', data.flow_agenda);
+                    
+                    alert("✅ Tudo restaurado! O Flow vai atualizar agora.");
+                    location.reload();
+                } catch (err) {
+                    alert("❌ O arquivo parece inválido.");
+                }
+            };
+            reader.readAsText(file);
+        }
+    </script>
+
+</body>
+</html>
