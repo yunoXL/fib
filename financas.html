@@ -16,6 +16,8 @@
             --text: #1e293b;
         }
 
+        /* RESET PARA OCUPAR A TELA TODA */
+        * { box-sizing: border-box; }
         body { 
             font-family: 'Segoe UI', sans-serif; 
             background-color: var(--bg); 
@@ -23,10 +25,11 @@
             margin: 0; 
             padding: 0; 
             display: flex; 
+            flex-direction: row; /* Padrão PC: Lado a Lado */
             min-height: 100vh;
         }
 
-        /* --- BARRA DE METAS RESPONSIVA --- */
+        /* --- BARRA DE METAS (DIREITA NO PC) --- */
         .goals-sidebar { 
             width: 80px; 
             background: var(--card); 
@@ -41,11 +44,10 @@
             padding: 20px 0; 
             cursor: pointer;
             z-index: 100;
-            transition: 0.3s;
         }
 
         .progress-container { 
-            width: 30px; 
+            width: 25px; 
             height: 60%; 
             background: #e2e8f0; 
             border-radius: 20px; 
@@ -65,14 +67,13 @@
         .goal-label { writing-mode: vertical-rl; transform: rotate(180deg); font-weight: bold; font-size: 0.8rem; }
 
         /* --- CONTEÚDO PRINCIPAL --- */
-        main { flex: 1; margin-right: 80px; padding: 20px; box-sizing: border-box; width: 100%; }
-
-        header { text-align: center; padding: 20px 0; }
+        main { flex: 1; margin-right: 80px; padding: 20px; width: 100%; }
+        header { text-align: center; padding: 10px 0; }
         .clickable-title { color: var(--primary); cursor: pointer; font-size: 2rem; font-weight: 900; margin: 0; }
 
         .months-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
+            grid-template-columns: repeat(4, 1fr); 
             gap: 15px; 
             max-width: 1000px; 
             margin: 20px auto; 
@@ -80,7 +81,7 @@
 
         .month-card { 
             background: var(--card); 
-            padding: 30px 10px; 
+            padding: 35px 10px; 
             border-radius: 20px; 
             text-align: center; 
             cursor: pointer; 
@@ -90,7 +91,7 @@
 
         .bottom-sections { 
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            grid-template-columns: 1fr 1fr; 
             gap: 20px; 
             max-width: 1000px; 
             margin: 20px auto; 
@@ -99,31 +100,56 @@
         .info-box { background: var(--card); padding: 20px; border-radius: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .vault-card-access { background: linear-gradient(135deg, var(--warning), #d97706); color: white; cursor: pointer; }
 
-        /* --- TELA DE METAS E DETALHES --- */
-        #goals-page, #month-detail, #vault-page { display: none; animation: fadeIn 0.3s ease; }
-        .goals-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; }
-        .goal-card { background: var(--card); padding: 20px; border-radius: 20px; position: relative; border: 2px solid transparent; }
-        .goal-card.favorite { border-color: var(--warning); }
-        
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 12px; border: 1px solid #ddd; font-size: 16px; }
-        .add-btn { background: var(--primary); color: white; border: none; font-weight: bold; cursor: pointer; padding: 15px; border-radius: 12px; width: 100%; }
-
-        /* --- MEDIA QUERY PARA CELULAR --- */
+        /* --- CONFIGURAÇÃO PARA CELULAR (IMPORTANTE) --- */
         @media (max-width: 768px) {
-            body { flex-direction: column; }
+            body { flex-direction: column; } /* Joga a barra de metas pra cima */
+            
             .goals-sidebar { 
-                width: 100%; height: auto; position: sticky; top: 0; 
-                flex-direction: row; border-left: none; border-bottom: 1px solid #ddd;
-                padding: 10px; 
+                width: 100%; 
+                height: auto; 
+                position: sticky; /* Fica presa no topo ao rolar */
+                top: 0; 
+                right: auto;
+                flex-direction: row; /* Itens um do lado do outro */
+                padding: 10px 20px; 
+                border-left: none; 
+                border-bottom: 2px solid var(--primary);
+                justify-content: space-between;
             }
-            .progress-container { width: 50%; height: 12px; margin: 0 15px; }
-            .progress-fill { bottom: 0; left: 0; height: 100% !important; }
-            .goal-label { writing-mode: horizontal-tb; transform: none; font-size: 0.7rem; }
+
+            .progress-container { 
+                width: 50%; 
+                height: 15px; 
+                margin: 0; 
+            }
+
+            .progress-fill { 
+                bottom: 0; 
+                left: 0; 
+                height: 100% !important; /* No celular a altura é fixa, o que muda é a largura */
+            }
+
+            .goal-label { 
+                writing-mode: horizontal-tb; 
+                transform: none; 
+                font-size: 0.8rem; 
+                max-width: 30%;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
             main { margin-right: 0; padding: 15px; }
-            .months-grid { grid-template-columns: repeat(2, 1fr); }
-            .clickable-title { font-size: 1.5rem; }
+            .months-grid { grid-template-columns: repeat(2, 1fr); } /* 2 meses por linha */
+            .bottom-sections { grid-template-columns: 1fr; } /* Fatura e Cofre um sobre o outro */
+            
+            .clickable-title { font-size: 1.6rem; }
         }
 
+        /* Telas de Metas/Detalhes */
+        #goals-page, #month-detail, #vault-page { display: none; }
+        .add-btn { background: var(--primary); color: white; border: none; font-weight: bold; cursor: pointer; padding: 15px; border-radius: 15px; width: 100%; }
+        
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
@@ -132,7 +158,7 @@
     <div class="goals-sidebar" onclick="goToGoals()">
         <span id="side-goal-percent" style="font-weight: 900; color: var(--success);">0%</span>
         <div class="progress-container">
-            <div id="side-progress-fill" class="progress-fill" style="height: 0%; width: 0%;"></div>
+            <div id="side-progress-fill" class="progress-fill"></div>
         </div>
         <div id="side-goal-name" class="goal-label">Carregando...</div>
     </div>
@@ -144,136 +170,66 @@
             <div class="months-grid" id="months-grid"></div>
             <div class="bottom-sections">
                 <div class="info-box">
-                    <h3 style="color: var(--primary); margin:0 0 15px 0;">💳 Cartão</h3>
-                    <div style="display:flex; gap:10px;">
-                        <input type="number" id="card-limit-input" placeholder="Limite">
-                        <button class="add-btn" style="width:auto;" onclick="saveLimit()">Ok</button>
-                    </div>
-                    <p>Fatura: <b id="current-bill-text" style="color: var(--danger);">R$ 0,00</b></p>
-                    <div style="height: 120px;"><canvas id="limitChart"></canvas></div>
+                    <h3 style="color: var(--primary); margin:0 0 10px 0;">💳 Cartão</h3>
+                    <p style="margin:5px 0;">Fatura: <b id="current-bill-text" style="color: var(--danger);">R$ 0,00</b></p>
+                    <div style="height: 100px;"><canvas id="limitChart"></canvas></div>
                 </div>
                 <div class="info-box vault-card-access" onclick="goToVault()">
-                    <h3>🔒 Meu Cofre</h3>
-                    <h2 id="total-vault-display">R$ 0,00</h2>
-                    <p>Ver Investimentos →</p>
+                    <h3 style="margin:0;">🔒 Meu Cofre</h3>
+                    <h2 id="total-vault-display" style="margin:10px 0;">R$ 0,00</h2>
+                    <small>Ver detalhes →</small>
                 </div>
             </div>
         </div>
 
         <div id="goals-page">
-            <button onclick="backToHome()" class="add-btn" style="background:#e2e8f0; color:var(--text); margin-bottom:20px;">← Voltar</button>
-            <div class="goals-grid" id="goals-list"></div>
-        </div>
-
-        <div id="month-detail">
-            <button onclick="backToHome()" class="add-btn" style="background:#e2e8f0; color:var(--text); margin-bottom:20px;">← Voltar</button>
-            <h2 id="current-month-title">Mês</h2>
-            <div class="info-box">
-                <input type="text" id="desc" placeholder="Descrição">
-                <input type="number" id="val" placeholder="Valor">
-                <select id="cat"><option value="Outros">Outros</option><option value="Cartão de Crédito">Cartão de Crédito</option></select>
-                <select id="type"><option value="out">Gasto</option><option value="in">Entrada</option></select>
-                <button class="add-btn" onclick="addTransaction()">Adicionar</button>
-            </div>
-            <div id="transaction-list" style="margin-top:20px;"></div>
+            <button onclick="backToHome()" class="add-btn" style="background:#ddd; color:#333; margin-bottom:20px;">← Voltar</button>
+            <div id="goals-list" style="display:grid; gap:10px;"></div>
         </div>
     </main>
 
     <script>
         const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-        let db = JSON.parse(localStorage.getItem('flow_db')) || {};
-        let investments = JSON.parse(localStorage.getItem('flow_inv')) || [];
         let goals = JSON.parse(localStorage.getItem('flow_goals')) || [
-            { id: 1, name: "Meta 1", desc: "Reserva", target: 1000, current: 0, fav: true },
-            { id: 2, name: "Meta 2", desc: "Viagem", target: 1000, current: 0, fav: false },
-            { id: 3, name: "Meta 3", desc: "Carro", target: 1000, current: 0, fav: false },
-            { id: 4, name: "Meta 4", desc: "Casa", target: 1000, current: 0, fav: false }
+            { id: 1, name: "Reserva", target: 1000, current: 200, fav: true }
         ];
-        let currentMonth = "";
-        let charts = {};
 
         function updateSidebar() {
             const fav = goals.find(g => g.fav) || goals[0];
             const percent = Math.min((fav.current / fav.target) * 100, 100).toFixed(0);
             document.getElementById('side-goal-percent').innerText = percent + '%';
-            const fill = document.getElementById('side-progress-fill');
             
-            if(window.innerWidth <= 768) {
-                fill.style.width = percent + '%';
-                fill.style.height = '100%';
+            const fill = document.getElementById('side-progress-fill');
+            const label = document.getElementById('side-goal-name');
+            
+            label.innerText = fav.name;
+
+            // Lógica de Preenchimento: Vertical no PC, Horizontal no Celular
+            if (window.innerWidth <= 768) {
+                fill.style.height = "100%";
+                fill.style.width = percent + "%";
             } else {
-                fill.style.height = percent + '%';
-                fill.style.width = '100%';
+                fill.style.width = "100%";
+                fill.style.height = percent + "%";
             }
-            document.getElementById('side-goal-name').innerText = `${fav.name} (Falta R$ ${fav.target - fav.current})`;
         }
 
         function renderMonths() {
             const grid = document.getElementById('months-grid');
-            grid.innerHTML = '';
-            months.forEach(m => {
-                grid.innerHTML += `<div class="month-card" onclick="openMonth('${m}')">${m}</div>`;
-            });
-        }
-
-        function openMonth(m) {
-            currentMonth = m;
-            document.getElementById('finance-home').style.display = 'none';
-            document.getElementById('month-detail').style.display = 'block';
-            document.getElementById('current-month-title').innerText = m;
-            renderTransactions();
+            grid.innerHTML = months.map(m => `<div class="month-card">${m}</div>`).join('');
         }
 
         function goToGoals() {
             document.getElementById('finance-home').style.display = 'none';
-            document.getElementById('month-detail').style.display = 'none';
             document.getElementById('goals-page').style.display = 'block';
-            renderGoals();
-        }
-
-        function renderGoals() {
-            const list = document.getElementById('goals-list');
-            list.innerHTML = '';
-            goals.forEach(g => {
-                list.innerHTML += `
-                    <div class="goal-card ${g.fav ? 'favorite' : ''}">
-                        <span style="cursor:pointer" onclick="setFav(${g.id})">${g.fav ? '⭐' : '☆'}</span>
-                        <input type="text" value="${g.name}" onchange="editGoal(${g.id}, 'name', this.value)">
-                        <input type="number" value="${g.current}" onchange="editGoal(${g.id}, 'current', this.value)">
-                        <small>Meta: R$ ${g.target}</small>
-                    </div>`;
-            });
-        }
-
-        function editGoal(id, field, val) {
-            const g = goals.find(x => x.id === id);
-            g[field] = field === 'name' ? val : parseFloat(val);
-            localStorage.setItem('flow_goals', JSON.stringify(goals));
-            updateSidebar();
-        }
-
-        function setFav(id) {
-            goals.forEach(g => g.fav = g.id === id);
-            localStorage.setItem('flow_goals', JSON.stringify(goals));
-            renderGoals();
-            updateSidebar();
         }
 
         function backToHome() {
-            document.querySelectorAll('#finance-home, #goals-page, #month-detail, #vault-page').forEach(el => el.style.display = 'none');
             document.getElementById('finance-home').style.display = 'block';
+            document.getElementById('goals-page').style.display = 'none';
         }
 
-        function renderTransactions() {
-            const list = document.getElementById('transaction-list');
-            list.innerHTML = '';
-            (db[currentMonth] || []).forEach(t => {
-                list.innerHTML += `<div style="background:#fff; padding:10px; border-radius:10px; margin-bottom:5px; display:flex; justify-content:space-between">
-                    <span>${t.desc}</span> <b>R$ ${t.val}</b>
-                </div>`;
-            });
-        }
-
+        // Atualiza ao carregar e ao girar/redimensionar a tela
         window.onload = () => { renderMonths(); updateSidebar(); };
         window.onresize = updateSidebar;
     </script>
